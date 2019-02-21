@@ -1,0 +1,39 @@
+{
+  "name": "express-route-audit",
+  "version": "1.0.0",
+  "description": "Audit declared Express routes with usage data",
+  "main": "index.js",
+  "scripts": {
+    "test": "nyc ava"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fluxsauce/express-route-audit.git"
+  },
+  "keywords": [
+    "express",
+    "route",
+    "routes",
+    "routing",
+    "audit",
+    "report"
+  ],
+  "author": "Jon Peck <jpeck@fluxsauce.com>",
+  "contributors": [],
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/fluxsauce/express-route-audit/issues"
+  },
+  "homepage": "https://github.com/fluxsauce/express-route-audit#readme",
+  "engines": {
+    "node": ">=6"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "ava": "^1.2.1",
+    "eslint": "^5.3.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.16.0",
+    "nyc": "^13.3.0"
+  }
+}
