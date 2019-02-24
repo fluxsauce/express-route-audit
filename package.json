@@ -1,6 +1,6 @@
 {
   "name": "express-route-audit",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Audit declared Express routes with usage data",
   "main": "index.js",
   "scripts": {

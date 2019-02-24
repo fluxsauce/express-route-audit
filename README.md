@@ -34,6 +34,10 @@ Then, given an Express app, a report can be generated on usage.
 app.get('/report', (request, response) => response.json(era.report(app)));
 ```
 
+The counts are stored in memory, so a server restart will reset all counts.
+
+The output is compatible with [json2csv](https://www.npmjs.com/package/json2csv) if JSON isn't convenient.
+
 ## Example
 
 ```bash
