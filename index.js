@@ -19,7 +19,7 @@ const listEndpoints = require('express-list-endpoints');
 
 let pathMethodCounts;
 if (pathMethodCounts === undefined) {
-  pathMethodCounts = new Map();
+  pathMethodCounts = {};
 }
 
 /**
@@ -40,6 +40,20 @@ function generateKey(route, method) {
 }
 
 /**
+ * Retrieve the count for a given route and method.
+ *
+ * @param {string} key - provided by generateKey
+ * @return {number} count, or 0 if never seen
+ */
+function getCount(key) {
+  let count = pathMethodCounts[key];
+  if (count === undefined) {
+    count = 0;
+  }
+  return count;
+}
+
+/**
  * Middleware that records the route paths upon a finished request.
  *
  * @param {Object} request - Express request object
@@ -51,8 +65,7 @@ function middleware(request, response, next) {
   response.on('finish', () => {
     if (request.route && request.route.path) {
       const key = generateKey(request.route.path, request.method);
-      const count = pathMethodCounts.get(key) || 0;
-      pathMethodCounts.set(key, count + 1);
+      pathMethodCounts[key] = getCount(key) + 1;
     }
   });
   return next();
@@ -70,11 +83,10 @@ function report(app) {
     endpoint.methods.forEach((method) => {
       const { path } = endpoint;
       const key = generateKey(path, method);
-      const count = pathMethodCounts.get(key) || 0;
       routes.push({
         path,
         method,
-        count,
+        count: getCount(key),
       });
     });
   });
