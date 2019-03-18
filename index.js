@@ -17,91 +17,86 @@
  */
 const listEndpoints = require('express-list-endpoints');
 
-let pathMethodCounts;
-if (pathMethodCounts === undefined) {
-  pathMethodCounts = {};
-}
-
-/**
- * Given a route and method, generate a key used for lookups.
- *
- * @param {string} route - Express route
- * @param {string} method - HTTP method
- * @return {string} normalized key
- */
-function generateKey(route, method) {
-  if (!route || typeof route !== 'string') {
-    throw new TypeError('generateKey: invalid route!');
+module.exports = class ERA {
+  constructor(value) {
+    // todo: validate;
+    this.storage = value;
   }
-  if (!method || typeof method !== 'string') {
-    throw new TypeError('generateKey: invalid method!');
-  }
-  return `${route.toLowerCase()}|${method.toLowerCase()}`;
-}
 
-/**
- * Retrieve the count for a given route and method.
- *
- * @param {string} key - provided by generateKey
- * @return {number} count, or 0 if never seen
- */
-function getCount(key) {
-  let count = pathMethodCounts[key];
-  if (count === undefined) {
-    count = 0;
-  }
-  return count;
-}
-
-/**
- * Middleware that records the route paths upon a finished request.
- *
- * @param {Object} request - Express request object
- * @param {Object} response - Express response object
- * @param {Function} next - Express next middleware function
- * @return {*} next
- */
-function middleware(request, response, next) {
-  response.on('finish', () => {
-    if (request.route && request.route.path) {
-      const key = generateKey(request.route.path, request.method);
-      pathMethodCounts[key] = getCount(key) + 1;
+  /**
+   * Given a route and method, generate a key used for lookups.
+   *
+   * @param {string} route - Express route
+   * @param {string} method - HTTP method
+   * @return {string} normalized key
+   */
+  static generateKey(route, method) {
+    if (!route || typeof route !== 'string') {
+      throw new TypeError('generateKey: invalid route!');
     }
-  });
-  return next();
-}
+    if (!method || typeof method !== 'string') {
+      throw new TypeError('generateKey: invalid method!');
+    }
+    return `${route.toLowerCase()}|${method.toLowerCase()}`;
+  }
 
-/**
- * Parse an Express app and combine with path/method counts to produce a consumable report.
- *
- * @param {Object} app - express app
- * @return {Array} objects containing count, method and path
- */
-function report(app) {
-  const routes = [];
-  listEndpoints(app).forEach((endpoint) => {
-    endpoint.methods.forEach((method) => {
-      const { path } = endpoint;
-      const key = generateKey(path, method);
-      routes.push({
-        path,
-        method,
-        count: getCount(key),
+  /**
+   * Middleware that records the route paths upon a finished request.
+   *
+   * @param {Object} request - Express request object
+   * @param {Object} response - Express response object
+   * @param {Function} next - Express next middleware function
+   * @return {*} next
+   */
+  middleware(request, response, next) {
+    response.on('finish', () => {
+      if (request.route && request.route.path) {
+        const key = ERA.generateKey(request.route.path, request.method);
+        this.storage.get(key)
+          .then(value => this.storage.set(key, value + 1))
+          .catch(error => next(error));
+      }
+    });
+    return next();
+  }
+
+  /**
+   * Parse an Express app and combine with path/method counts to produce a consumable report.
+   *
+   * @param {Object} app - express app
+   * @return {Promise<Array>} objects containing count, method and path
+   */
+  report(app) {
+    const routes = [];
+
+    const promises = [];
+
+    listEndpoints(app).forEach((endpoint) => {
+      endpoint.methods.forEach((method) => {
+        const { path } = endpoint;
+        const key = ERA.generateKey(path, method);
+        routes.push({
+          path,
+          method,
+        });
+
+        promises.push(this.storage.get(key));
       });
     });
-  });
-  // Highest counts first.
-  routes.sort((a, b) => {
-    if (a.count > b.count) {
-      return -1;
-    }
-    return (a.count < b.count) ? 1 : 0;
-  });
-  return routes;
-}
 
-module.exports = {
-  generateKey,
-  middleware,
-  report,
+    return Promise.all(promises)
+      .then((counts) => {
+        routes.forEach((value, index) => {
+          routes[index].count = counts[index];
+        });
+        // Highest counts first.
+        routes.sort((a, b) => {
+          if (a.count > b.count) {
+            return -1;
+          }
+          return (a.count < b.count) ? 1 : 0;
+        });
+        return routes;
+      });
+  }
 };
