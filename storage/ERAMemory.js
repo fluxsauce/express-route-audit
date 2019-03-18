@@ -6,14 +6,16 @@ module.exports = class ERAMemory extends API {
     if (count === undefined) {
       count = 0;
     }
-    return count;
+    return Promise.resolve(count);
   }
 
   set(key, value) {
     this.pathMethodCounts[key] = value;
+    return Promise.resolve();
   }
 
   clear() {
     this.pathMethodCounts = {};
+    return Promise.resolve();
   }
 };

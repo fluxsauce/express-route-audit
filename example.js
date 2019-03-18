@@ -30,13 +30,14 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.post('/hello', (request, response) => response.send(request.body));
 
 // Report on route usage.
-app.get('/report', (request, response) => response.json(era.report(app)));
+app.get('/report', (request, response, next) => era.report(app)
+  .then(report => response.json(report))
+  .catch(error => next(error)));
 
 // Clear report.
-app.delete('/report', (request, response) => {
-  era.storage.clear();
-  return response.sendStatus(204);
-});
+app.delete('/report', (request, response, next) => era.storage.clear()
+  .then(() => response.sendStatus(204))
+  .catch(error => next(error)));
 
 // 404
 app.use((request, response) => response.sendStatus(404));

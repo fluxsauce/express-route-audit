@@ -43,7 +43,9 @@ Then, given an Express app, a report can be generated on usage.
 
 ```js
 // Report on route usage.
-app.get('/report', (request, response) => response.json(era.report(app)));
+app.get('/report', (request, response, next) => era.report(app)
+  .then(report => response.json(report))
+  .catch(error => next(error)));
 ```
 
 The output is compatible with [json2csv](https://www.npmjs.com/package/json2csv) if JSON isn't convenient.

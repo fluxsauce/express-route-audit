@@ -52,7 +52,9 @@ module.exports = class ERA {
     response.on('finish', () => {
       if (request.route && request.route.path) {
         const key = ERA.generateKey(request.route.path, request.method);
-        this.storage.set(key, this.storage.get(key) + 1);
+        this.storage.get(key)
+          .then(value => this.storage.set(key, value + 1))
+          .catch(error => next(error));
       }
     });
     return next();
@@ -62,10 +64,13 @@ module.exports = class ERA {
    * Parse an Express app and combine with path/method counts to produce a consumable report.
    *
    * @param {Object} app - express app
-   * @return {Array} objects containing count, method and path
+   * @return {Promise<Array>} objects containing count, method and path
    */
   report(app) {
     const routes = [];
+
+    const promises = [];
+
     listEndpoints(app).forEach((endpoint) => {
       endpoint.methods.forEach((method) => {
         const { path } = endpoint;
@@ -73,17 +78,25 @@ module.exports = class ERA {
         routes.push({
           path,
           method,
-          count: this.storage.get(key),
         });
+
+        promises.push(this.storage.get(key));
       });
     });
-    // Highest counts first.
-    routes.sort((a, b) => {
-      if (a.count > b.count) {
-        return -1;
-      }
-      return (a.count < b.count) ? 1 : 0;
-    });
-    return routes;
+
+    return Promise.all(promises)
+      .then((counts) => {
+        routes.forEach((value, index) => {
+          routes[index].count = counts[index];
+        });
+        // Highest counts first.
+        routes.sort((a, b) => {
+          if (a.count > b.count) {
+            return -1;
+          }
+          return (a.count < b.count) ? 1 : 0;
+        });
+        return routes;
+      });
   }
 };
