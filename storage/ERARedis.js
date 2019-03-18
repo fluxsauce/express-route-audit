@@ -13,7 +13,7 @@ module.exports = class ERARedis extends API {
         if (!value) {
           return 0;
         }
-        return value;
+        return parseInt(value, 10);
       });
   }
 
@@ -23,9 +23,6 @@ module.exports = class ERARedis extends API {
 
   clear() {
     return this.client.keys(`${this.prefix}:*`).then((keys) => {
-      // Use pipeline instead of sending
-      // one command each time to improve the
-      // performance.
       const pipeline = this.client.pipeline();
       keys.forEach((key) => {
         pipeline.del(key);

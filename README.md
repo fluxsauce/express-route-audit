@@ -168,3 +168,14 @@ listening on 3000
 2019-03-18T16:50:42.197Z 'GET' '/report'
 2019-03-18T16:50:47.603Z 'DELETE' '/report'
 ```
+
+### Redis
+
+The `storage/ERARedis` backend takes two arguments; a fully configured Redis client and a key prefix. Tested with `ioredis`.
+
+Example:
+
+```js
+// Initialize ERA with Redis storage.
+const era = new ERA(new ERARedis(redis, 'era::'));
+```

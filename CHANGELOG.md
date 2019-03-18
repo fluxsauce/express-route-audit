@@ -3,6 +3,7 @@
 ## v2.0.0 - 2019-03-18
 
 - Abstracted storage to facilitate persistent reporting.
+- Added `ERAMemory` (in-memory) and `ERARedis` (ioredis) backends.
 
 ## v1.0.2 - 2019-02-26
 
