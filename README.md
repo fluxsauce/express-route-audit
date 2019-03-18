@@ -17,13 +17,13 @@ npm install express-route-audit
 Add to your Express application.
 
 ```js
-const ERA = require('./index');
+const ERA = require('express-route-audit');
 ```
 
 Choose a storage backend. For transient in-memory storage that will not persist across restarts / processes, use `ERAMemory`.
 
 ```js
-const ERAMemory = require('./storage/ERAMemory');
+const ERAMemory = require('express-route-audit/storage/ERAMemory');
 ```
 
 Initialize ERA with in-memory storage.
@@ -156,6 +156,7 @@ Example server output:
 ```
 » node ./example.js 
 listening on 3000
+2019-03-18T16:50:17.342Z 'GET' '/report'
 2019-03-18T16:50:21.567Z 'GET' '/ping'
 2019-03-18T16:50:22.104Z 'GET' '/ping'
 2019-03-18T16:50:22.626Z 'GET' '/ping'
